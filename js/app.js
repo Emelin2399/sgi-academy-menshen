@@ -244,6 +244,44 @@ function sumarPuntos(n) {
 }
 
 /* ============================================================
+   REGISTRO DE FALENCIAS POR TEMA
+   ------------------------------------------------------------
+   Guarda, por empleado, qué temas de qué módulo se le
+   dificultan. El Área de Calidad lo ve en el panel y el CSV.
+   Estructura en el usuario:
+     falencias: {
+       "<idModulo>": {
+         "<indiceTema>": { titulo, veces, ultimaFecha }
+       }
+     }
+   ============================================================ */
+function registrarFalencias(mod, indicesTema) {
+  const u = usuarioActual();
+  if (!u || !indicesTema || !indicesTema.length) return;
+  if (!u.falencias) u.falencias = {};
+  if (!u.falencias[mod.id]) u.falencias[mod.id] = {};
+  indicesTema.forEach((idx) => {
+    const tema = mod.temas && mod.temas[idx];
+    if (!tema) return;
+    const reg = u.falencias[mod.id][idx] || { titulo: tema.titulo, veces: 0 };
+    reg.titulo = tema.titulo;
+    reg.veces += 1;
+    reg.ultimaFecha = new Date().toLocaleDateString("es-CO");
+    u.falencias[mod.id][idx] = reg;
+  });
+  u.ultimaActividad = new Date().toISOString();
+  guardar();
+}
+
+/* Al aprobar un módulo, se consideran superadas sus falencias */
+function limpiarFalencias(mod) {
+  const u = usuarioActual();
+  if (!u || !u.falencias || !u.falencias[mod.id]) return;
+  delete u.falencias[mod.id];
+  guardar();
+}
+
+/* ============================================================
    NAVEGACIÓN DE VISTAS
    ============================================================ */
 function mostrarVista(id) {
@@ -516,6 +554,7 @@ function calificarExamen(mod, seleccion, cont) {
 
   let aciertos = 0;
   const bloques = cont.querySelectorAll(".question");
+  const temasFallados = []; // índices de temas débiles detectados en este examen
 
   mod.examen.forEach((q, qi) => {
     const bloque = bloques[qi];
@@ -532,6 +571,9 @@ function calificarExamen(mod, seleccion, cont) {
       opciones[elegida].classList.remove("selected");
       opciones[elegida].classList.add("wrong");
       opciones[q.correcta].classList.add("correct");
+      // Detectar a qué tema pertenece la pregunta fallada
+      const idxTema = temaDePregunta(mod, q.pregunta);
+      if (!temasFallados.includes(idxTema)) temasFallados.push(idxTema);
     }
   });
 
@@ -552,6 +594,11 @@ function calificarExamen(mod, seleccion, cont) {
       if (!previo) sumarPuntos(20); // bono la primera vez que aprueba
       guardar();
     }
+    // Aprobó: se consideran superadas las falencias de este módulo
+    limpiarFalencias(mod);
+  } else if (!aprobado) {
+    // Reprobó: registramos los temas débiles para el refuerzo y el admin
+    registrarFalencias(mod, temasFallados);
   }
 
   $("#examenResultado").innerHTML = `
@@ -562,7 +609,7 @@ function calificarExamen(mod, seleccion, cont) {
         ${aprobado ? "🎉 ¡Aprobado! " + MASCOTA.frases.moduloCompleto : "💪 " + MASCOTA.frases.animo + " (Necesitas 70%)"}
       </p>
       <p>Acertaste ${aciertos} de ${total} · Ganaste ${puntosExamen} pts</p>
-      ${aprobado ? renderCertificado(mod, porcentaje) : `<button class="btn" id="reintentarBtn">Reintentar examen</button>`}
+      ${aprobado ? renderCertificado(mod, porcentaje) : `<div id="refuerzoZona"></div><button class="btn" id="reintentarBtn">Reintentar examen</button>`}
       <div style="margin-top:14px"><button class="btn secondary" id="volverBtn">Volver al inicio</button></div>
     </div>
   `;
@@ -573,6 +620,11 @@ function calificarExamen(mod, seleccion, cont) {
       ? `¡Aprobaste con ${porcentaje} por ciento! ${MASCOTA.frases.moduloCompleto}`
       : `Obtuviste ${porcentaje} por ciento. ${MASCOTA.frases.animo} Necesitas 70 por ciento para aprobar.`
   );
+
+  // Si reprobó, mostramos el refuerzo personalizado sobre los temas fallados
+  if (!aprobado) {
+    renderRefuerzo(mod, temasFallados);
+  }
 
   const reintentar = $("#reintentarBtn");
   if (reintentar) reintentar.addEventListener("click", () => abrirModulo(mod.id));
@@ -598,6 +650,221 @@ function renderCertificado(mod, porcentaje) {
 }
 
 /* ============================================================
+   REFUERZO PERSONALIZADO (tras reprobar un examen)
+   ------------------------------------------------------------
+   Muestra:
+   1) Un repaso de los temas que la persona falló.
+   2) Acceso a dos juegos de refuerzo: Semáforo y Cartas ocultas.
+   ============================================================ */
+function renderRefuerzo(mod, temasFallados) {
+  const zona = $("#refuerzoZona");
+  if (!zona) return;
+
+  // Si no se detectó ningún tema puntual, reforzamos todos
+  const indices =
+    temasFallados && temasFallados.length
+      ? temasFallados
+      : (mod.temas || []).map((_, i) => i);
+
+  const repaso = indices
+    .map((i) => mod.temas && mod.temas[i])
+    .filter(Boolean)
+    .map(
+      (t) => `
+        <div class="refuerzo-tema">
+          <h4>📌 ${t.titulo}</h4>
+          <p>${t.contenido}</p>
+          ${t.tip ? `<div class="tip tip-mini"><img class="capi-mini" src="img/capi-menshi.svg" alt="Capi Menshi"/><span>${t.tip}</span></div>` : ""}
+        </div>`
+    )
+    .join("");
+
+  zona.innerHTML = `
+    <div class="refuerzo-box">
+      <div class="refuerzo-head">
+        <img class="capi-mini" src="img/capi-menshi.svg" alt="Capi Menshi" />
+        <div>
+          <h3 style="margin:0">🎯 Refuerzo personalizado</h3>
+          <p style="margin:4px 0 0">${MASCOTA.frases.refuerzo}</p>
+        </div>
+      </div>
+      <div class="refuerzo-repaso">
+        <h4 class="refuerzo-sub">📚 Repasa estos temas:</h4>
+        ${repaso || "<p>¡Repasa el módulo completo y vuelve a intentarlo!</p>"}
+      </div>
+      <h4 class="refuerzo-sub">🎮 Practica con juegos de refuerzo:</h4>
+      <div class="refuerzo-juegos">
+        <button class="btn game-btn semaforo" id="btnSemaforo">🚦 Juego del Semáforo</button>
+        <button class="btn game-btn cartas" id="btnCartas">🃏 Cartas Ocultas</button>
+      </div>
+      <div id="juegoRefuerzo"></div>
+    </div>
+  `;
+
+  Voz.hablar(MASCOTA.frases.refuerzo);
+
+  $("#btnSemaforo").addEventListener("click", () => renderSemaforo(mod));
+  $("#btnCartas").addEventListener("click", () => renderCartas(mod));
+}
+
+/* ---------------- Juego 1: SEMÁFORO (verdadero / falso) ----------------
+   Aparece una afirmación. La persona decide:
+   🟢 Verde = correcta/verdadera   🔴 Rojo = incorrecta/falsa */
+function renderSemaforo(mod) {
+  const cont = $("#juegoRefuerzo");
+  const afirmaciones = generarSemaforo(mod);
+
+  if (!afirmaciones.length) {
+    cont.innerHTML = `<div class="feedback no">Este módulo aún no tiene afirmaciones para el semáforo.</div>`;
+    return;
+  }
+
+  let idx = 0;
+  let aciertos = 0;
+
+  function pintar() {
+    if (idx >= afirmaciones.length) {
+      cont.innerHTML = `
+        <div class="juego-card">
+          <div class="score-big">🚦 ${aciertos} / ${afirmaciones.length}</div>
+          <p style="font-weight:800">${MASCOTA.frases.refuerzoListo}</p>
+          <button class="btn secondary" id="semaforoReiniciar">Jugar de nuevo</button>
+        </div>`;
+      Voz.hablar(MASCOTA.frases.refuerzoListo);
+      $("#semaforoReiniciar").addEventListener("click", () => renderSemaforo(mod));
+      return;
+    }
+    const a = afirmaciones[idx];
+    cont.innerHTML = `
+      <div class="juego-card semaforo-card">
+        <p class="semaforo-progreso">Afirmación ${idx + 1} de ${afirmaciones.length}</p>
+        <div class="semaforo-luz"><span class="luz roja"></span><span class="luz amarilla"></span><span class="luz verde"></span></div>
+        <p class="semaforo-afirmacion">${a.afirmacion}</p>
+        <div class="semaforo-botones">
+          <button class="btn sem-verde" id="semV">🟢 Verdadero</button>
+          <button class="btn sem-rojo" id="semF">🔴 Falso</button>
+        </div>
+        <div id="semaforoFeedback"></div>
+      </div>`;
+
+    const responder = (eligioVerdadero) => {
+      const fb = $("#semaforoFeedback");
+      $("#semV").disabled = true;
+      $("#semF").disabled = true;
+      const acerto = eligioVerdadero === a.verdadero;
+      if (acerto) {
+        aciertos++;
+        sumarPuntos(3);
+        fb.innerHTML = `<div class="feedback ok">✅ ${MASCOTA.frases.semaforoOk} ${a.explica}</div>`;
+        Voz.hablar(MASCOTA.frases.semaforoOk);
+      } else {
+        fb.innerHTML = `<div class="feedback no">❌ ${MASCOTA.frases.semaforoFallo} ${a.explica}</div>`;
+        Voz.hablar(MASCOTA.frases.semaforoFallo);
+      }
+      setTimeout(() => {
+        idx++;
+        pintar();
+      }, 1600);
+    };
+
+    $("#semV").addEventListener("click", () => responder(true));
+    $("#semF").addEventListener("click", () => responder(false));
+  }
+
+  pintar();
+  cont.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ---------------- Juego 2: CARTAS OCULTAS (memoria) ----------------
+   Tablero de cartas boca abajo. Hay que emparejar cada CONCEPTO con
+   su DEFINICIÓN. Refuerza por asociación y repetición. */
+function renderCartas(mod) {
+  const cont = $("#juegoRefuerzo");
+  const parejas = generarCartas(mod);
+
+  if (parejas.length < 2) {
+    cont.innerHTML = `<div class="feedback no">Este módulo necesita al menos 2 temas para armar las cartas.</div>`;
+    return;
+  }
+
+  // Construir el mazo: cada pareja genera 2 cartas con el mismo "par"
+  let cartas = [];
+  parejas.forEach((p, i) => {
+    cartas.push({ par: i, tipo: "concepto", texto: p.concepto });
+    cartas.push({ par: i, tipo: "definicion", texto: p.definicion });
+  });
+  cartas = cartas.sort(() => Math.random() - 0.5);
+
+  const totalPares = parejas.length;
+  let encontrados = 0;
+  let voltada = null; // carta actualmente volteada
+  let bloqueado = false;
+
+  cont.innerHTML = `
+    <div class="juego-card">
+      <p class="cartas-progreso">Parejas encontradas: <span id="cartasCount">0</span> / ${totalPares}</p>
+      <div class="cartas-grid" id="cartasGrid"></div>
+      <div id="cartasFeedback"></div>
+    </div>`;
+
+  const grid = $("#cartasGrid");
+  const count = $("#cartasCount");
+  const fb = $("#cartasFeedback");
+
+  cartas.forEach((carta, i) => {
+    const el = document.createElement("button");
+    el.className = "carta";
+    el.dataset.index = i;
+    el.innerHTML = `<span class="carta-dorso">🐶</span><span class="carta-frente">${carta.texto}</span>`;
+
+    el.addEventListener("click", () => {
+      if (bloqueado) return;
+      if (el.classList.contains("abierta") || el.classList.contains("emparejada")) return;
+
+      el.classList.add("abierta");
+
+      if (!voltada) {
+        voltada = { el, carta };
+        return;
+      }
+
+      // Segunda carta: comparar
+      bloqueado = true;
+      const esPar = voltada.carta.par === carta.par && voltada.el !== el;
+
+      if (esPar) {
+        el.classList.add("emparejada");
+        voltada.el.classList.add("emparejada");
+        encontrados++;
+        count.textContent = encontrados;
+        sumarPuntos(4);
+        fb.innerHTML = `<div class="feedback ok">✅ ${MASCOTA.frases.cartasOk}</div>`;
+        Voz.hablar(MASCOTA.frases.cartasOk);
+        voltada = null;
+        bloqueado = false;
+        if (encontrados === totalPares) {
+          sumarPuntos(10);
+          fb.innerHTML = `<div class="feedback ok">🎉 ${MASCOTA.frases.cartasFin}</div>`;
+          Voz.hablar(MASCOTA.frases.cartasFin);
+        }
+      } else {
+        const otra = voltada;
+        setTimeout(() => {
+          el.classList.remove("abierta");
+          otra.el.classList.remove("abierta");
+          voltada = null;
+          bloqueado = false;
+        }, 900);
+      }
+    });
+
+    grid.appendChild(el);
+  });
+
+  cont.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ============================================================
    PANEL DE ADMINISTRADOR
    ============================================================ */
 function listaUsuarios() {
@@ -614,6 +881,31 @@ function promedioUsuario(u) {
   return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
 }
 
+/* Devuelve una lista legible de las falencias (temas por reforzar) de
+   un usuario: [{ modulo, tema, veces }]. Ignora módulos ya aprobados. */
+function falenciasUsuario(u) {
+  const out = [];
+  if (!u.falencias) return out;
+  Object.entries(u.falencias).forEach(([modId, temas]) => {
+    // Si ya aprobó el módulo, no es una falencia pendiente
+    if (u.completados && u.completados[modId]) return;
+    const mod = MODULOS.find((m) => m.id === modId);
+    const nombreMod = mod ? mod.titulo : modId;
+    Object.values(temas).forEach((t) => {
+      out.push({ modulo: nombreMod, tema: t.titulo, veces: t.veces || 1 });
+    });
+  });
+  // Ordenar por reincidencia (más fallos primero)
+  return out.sort((a, b) => b.veces - a.veces);
+}
+
+/* Texto plano de falencias para una celda/CSV */
+function falenciasTexto(u) {
+  const f = falenciasUsuario(u);
+  if (!f.length) return "";
+  return f.map((x) => `${x.modulo} → ${x.tema} (x${x.veces})`).join(" | ");
+}
+
 function renderAdmin() {
   const usuarios = listaUsuarios();
   const totalMods = totalModulosDisponibles();
@@ -626,11 +918,14 @@ function renderAdmin() {
     ? Math.round(promGeneralVals.reduce((a, b) => a + b, 0) / promGeneralVals.length)
     : 0;
 
+  // Empleados con temas pendientes por reforzar
+  const conFalencias = usuarios.filter((u) => falenciasUsuario(u).length > 0).length;
+
   $("#adminStats").innerHTML = `
     <div class="stat-card"><div class="stat-num">${totalEmpleados}</div><div class="stat-label">Empleados registrados</div></div>
     <div class="stat-card"><div class="stat-num">${activos}</div><div class="stat-label">Con módulos aprobados</div></div>
     <div class="stat-card"><div class="stat-num">${promGeneral}%</div><div class="stat-label">Promedio general</div></div>
-    <div class="stat-card"><div class="stat-num">${totalMods}</div><div class="stat-label">Módulos disponibles</div></div>
+    <div class="stat-card ${conFalencias ? "stat-alert" : ""}"><div class="stat-num">${conFalencias}</div><div class="stat-label">Con temas por reforzar</div></div>
   `;
 
   const tbody = $("#adminTableBody");
@@ -648,6 +943,15 @@ function renderAdmin() {
       const fecha = u.ultimaActividad
         ? new Date(u.ultimaActividad).toLocaleDateString("es-CO")
         : "—";
+      const falencias = falenciasUsuario(u);
+      const falenciasHtml = falencias.length
+        ? falencias
+            .map(
+              (x) =>
+                `<span class="falencia-chip" title="Falló ${x.veces} vez(ces)">${x.modulo}: ${x.tema} <b>×${x.veces}</b></span>`
+            )
+            .join(" ")
+        : '<span class="sin-falencias">✅ Sin pendientes</span>';
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><strong>${u.nombre}</strong></td>
@@ -655,6 +959,7 @@ function renderAdmin() {
         <td>${completados} / ${totalMods}</td>
         <td>${prom === null ? "—" : prom + "%"}</td>
         <td>⭐ ${u.puntos}</td>
+        <td class="falencias-cell">${falenciasHtml}</td>
         <td>${fecha}</td>
       `;
       tbody.appendChild(tr);
@@ -676,9 +981,10 @@ function exportarCSV() {
   const totalMods = totalModulosDisponibles();
   const modsDisp = MODULOS.filter((m) => m.estado === "disponible");
 
-  // Encabezados: datos + una columna por módulo disponible
+  // Encabezados: datos + una columna por módulo disponible + temas por reforzar
   const headers = ["Empleado", "Area/Cargo", "Modulos completados", "Promedio (%)", "Puntos", "Ultima actividad"];
   modsDisp.forEach((m) => headers.push(m.titulo + " (%)"));
+  headers.push("Temas por reforzar");
 
   const filas = [headers];
   usuarios.forEach((u) => {
@@ -695,6 +1001,7 @@ function exportarCSV() {
       const c = u.completados[m.id];
       fila.push(c ? c.porcentaje : "");
     });
+    fila.push(falenciasTexto(u)); // columna de falencias al final
     filas.push(fila);
   });
 
