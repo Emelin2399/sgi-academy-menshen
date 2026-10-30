@@ -67,58 +67,24 @@ function guardar() {
 }
 
 /* ============================================================
-   VOZ DE CAPI MENSHI (Web Speech API)
-   Capi puede HABLAR en voz alta en PC y celulares, sin instalar
-   nada. El usuario puede activar/silenciar la voz con un botón.
+   VOZ DE CAPI MENSHI — DESACTIVADA
+   ------------------------------------------------------------
+   La voz por síntesis del navegador sonaba muy robótica, así que
+   Capi se comunica SOLO por texto (sus burbujas y mensajes).
+   Dejamos este objeto como "stub" (vacío) para no tener que
+   borrar cada llamada a Voz.hablar(...) repartida en el código:
+   todas quedan sin efecto. Además, con soportada=false se ocultan
+   solos el botón de voz del encabezado y los botones "Escuchar".
+   Si algún día quieres reactivar la voz, aquí es donde se hace.
    ============================================================ */
 const Voz = {
-  soportada: typeof window !== "undefined" && "speechSynthesis" in window,
-  activa: true, // el usuario puede silenciar
-  vozEs: null,
-
-  init() {
-    if (!this.soportada) return;
-    // Preferencia guardada de voz on/off
-    const pref = localStorage.getItem("sgi_voz_activa");
-    if (pref !== null) this.activa = pref === "1";
-    // Buscar una voz en español cuando el navegador las cargue
-    const elegir = () => {
-      const voces = window.speechSynthesis.getVoices();
-      this.vozEs =
-        voces.find((v) => /es(-|_)?(CO|419|MX|ES)/i.test(v.lang)) ||
-        voces.find((v) => /^es/i.test(v.lang)) ||
-        null;
-    };
-    elegir();
-    window.speechSynthesis.onvoiceschanged = elegir;
-  },
-
-  hablar(texto) {
-    if (!this.soportada || !this.activa || !texto) return;
-    // Quitar emojis para que no los lea
-    const limpio = texto.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "").trim();
-    if (!limpio) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(limpio);
-    u.lang = "es-CO";
-    if (this.vozEs) u.voice = this.vozEs;
-    u.rate = 1;
-    u.pitch = 1.15; // tono amigable
-    window.speechSynthesis.speak(u);
-  },
-
-  silenciar() {
-    if (this.soportada) window.speechSynthesis.cancel();
-  },
-
-  toggle() {
-    this.activa = !this.activa;
-    localStorage.setItem("sgi_voz_activa", this.activa ? "1" : "0");
-    if (!this.activa) this.silenciar();
-    return this.activa;
-  },
+  soportada: false, // desactivada: oculta botones de voz y silencia todo
+  activa: false,
+  init() {},
+  hablar() {},
+  silenciar() {},
+  toggle() { return false; },
 };
-Voz.init();
 
 /* ============================================================
    LOGIN / SESIÓN
