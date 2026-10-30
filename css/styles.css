@@ -553,3 +553,156 @@ html { -webkit-text-size-adjust: 100%; }
     padding: 6px 2px 0;
   }
 }
+
+/* ============================================================
+   REFUERZO PERSONALIZADO + JUEGOS (semáforo y cartas)
+   ============================================================ */
+.refuerzo-box {
+  margin-top: 18px;
+  text-align: left;
+  background: #fff7fb;
+  border: 2px dashed var(--azul);
+  border-radius: var(--radio);
+  padding: 18px;
+}
+.refuerzo-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.refuerzo-head .capi-mini { width: 46px; height: 46px; flex: 0 0 auto; }
+.refuerzo-sub {
+  margin: 16px 0 10px;
+  font-family: "Baloo 2", sans-serif;
+  color: var(--azul-oscuro);
+}
+.refuerzo-tema {
+  background: var(--blanco);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--sombra-suave);
+}
+.refuerzo-tema h4 { margin-bottom: 6px; color: var(--gris-texto); }
+.tip-mini { margin-top: 8px; }
+
+.refuerzo-juegos {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.game-btn { flex: 1 1 200px; font-size: 16px; }
+.game-btn.semaforo { background: linear-gradient(120deg, #e53935, #f6c343, #6c9a2f); color: #fff; }
+.game-btn.cartas { background: linear-gradient(120deg, var(--azul), var(--morado)); color: #fff; }
+
+.juego-card {
+  margin-top: 16px;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  padding: 18px;
+  box-shadow: var(--sombra-suave);
+  text-align: center;
+}
+
+/* ---- Semáforo ---- */
+.semaforo-progreso { font-weight: 700; color: var(--morado); margin-bottom: 10px; }
+.semaforo-luz {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #2c2c2c;
+  padding: 10px;
+  border-radius: 40px;
+  margin-bottom: 12px;
+}
+.semaforo-luz .luz { width: 26px; height: 26px; border-radius: 50%; opacity: 0.35; }
+.semaforo-luz .roja { background: #e53935; }
+.semaforo-luz .amarilla { background: #f6c343; }
+.semaforo-luz .verde { background: #6c9a2f; }
+.semaforo-afirmacion {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 10px auto 16px;
+  max-width: 640px;
+}
+.semaforo-botones { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.sem-verde { background: var(--verde); color: #fff; }
+.sem-rojo { background: var(--rojo); color: #fff; }
+
+/* ---- Cartas ocultas (memoria) ---- */
+.cartas-progreso { font-weight: 700; color: var(--azul-oscuro); margin-bottom: 12px; }
+.cartas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.carta {
+  position: relative;
+  min-height: 110px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  background: transparent;
+}
+.carta .carta-dorso,
+.carta .carta-frente {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  backface-visibility: hidden;
+  transition: transform 0.3s ease;
+}
+.carta .carta-dorso {
+  background: linear-gradient(135deg, var(--azul), var(--morado));
+  color: #fff;
+  font-size: 34px;
+}
+.carta .carta-frente {
+  background: #fff;
+  color: var(--gris-texto);
+  border: 2px solid var(--azul);
+  transform: rotateY(180deg);
+  overflow: hidden;
+}
+.carta.abierta .carta-dorso { transform: rotateY(180deg); }
+.carta.abierta .carta-frente { transform: rotateY(360deg); }
+.carta.emparejada .carta-frente {
+  border-color: var(--verde);
+  background: #f0f7e8;
+  transform: rotateY(360deg);
+}
+.carta.emparejada { animation: emparejada-pulse 0.5s ease; }
+@keyframes emparejada-pulse { 50% { transform: scale(1.06); } }
+
+@media (max-width: 560px) {
+  .cartas-grid { grid-template-columns: repeat(2, 1fr); }
+  .carta { min-height: 96px; }
+}
+
+/* ============================================================
+   FALENCIAS EN EL PANEL DE ADMIN
+   ============================================================ */
+.stat-card.stat-alert { outline: 2px solid var(--rojo); outline-offset: -2px; }
+.falencias-cell { max-width: 320px; }
+.falencia-chip {
+  display: inline-block;
+  background: #fdecef;
+  color: var(--azul-oscuro);
+  border: 1px solid #f3b6c6;
+  border-radius: 999px;
+  padding: 3px 10px;
+  margin: 2px 3px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sin-falencias { color: var(--verde-oscuro); font-weight: 700; font-size: 13px; }

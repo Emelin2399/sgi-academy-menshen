@@ -28,6 +28,14 @@ const MASCOTA = {
     falloExamen: "¡Ups! Esa se nos escapó. Revisemos por qué.",
     moduloCompleto: "¡Misión cumplida! Un guardián más fuerte en Menshen.",
     animo: "No te rindas, los mejores guardianes aprenden de cada pista.",
+    refuerzo:
+      "Detecté los temas que se te complicaron. ¡Vamos a reforzarlos juntos con un repaso y unos juegos antes de reintentar!",
+    refuerzoListo:
+      "¡Genial! Ya repasaste lo que costaba. Ahora sí, reintenta el examen cuando quieras.",
+    semaforoOk: "¡Correcto! Vas leyendo muy bien las señales.",
+    semaforoFallo: "¡Casi! Fíjate otra vez en esa afirmación.",
+    cartasOk: "¡Pareja encontrada! Tu memoria de guardián está afilada.",
+    cartasFin: "¡Emparejaste todo! Ese tema ya lo tienes más claro.",
   },
 };
 
@@ -520,3 +528,116 @@ const MODULOS = [
     ],
   },
 ];
+
+/* ============================================================
+   MOTOR DE REFUERZO (autogenerado desde el contenido)
+   ------------------------------------------------------------
+   No necesitas escribir nada: a partir de los temas y exámenes
+   de cada módulo se generan automáticamente:
+     • Afirmaciones para el juego de SEMÁFORO (verdadero/falso)
+     • Parejas para el juego de CARTAS OCULTAS (memoria)
+     • Un mapeo de cada pregunta de examen a su tema, para
+       reforzar justo lo que la persona falló.
+
+   Si en el futuro quieres personalizar un juego para un módulo,
+   puedes añadir a ese módulo en MODULOS:
+     refuerzo: {
+       semaforo: [ { afirmacion:"...", verdadero:true/false, explica:"..." }, ... ],
+       cartas:   [ { concepto:"...", definicion:"..." }, ... ]
+     }
+   y el motor usará lo tuyo en lugar de lo autogenerado.
+   ============================================================ */
+
+/* Corta un texto largo a una frase legible para las cartas */
+function _recortar(texto, max = 90) {
+  if (!texto) return "";
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (limpio.length <= max) return limpio;
+  const corte = limpio.slice(0, max);
+  const ultimoEspacio = corte.lastIndexOf(" ");
+  return (ultimoEspacio > 40 ? corte.slice(0, ultimoEspacio) : corte) + "…";
+}
+
+/* Genera afirmaciones de SEMÁFORO para un módulo.
+   - Las correctas del examen se convierten en afirmaciones VERDADERAS.
+   - Una opción incorrecta se convierte en afirmación FALSA.
+   - Si el tema tiene "tip", se usa como afirmación verdadera extra. */
+function generarSemaforo(mod) {
+  if (mod.refuerzo && Array.isArray(mod.refuerzo.semaforo) && mod.refuerzo.semaforo.length) {
+    return mod.refuerzo.semaforo;
+  }
+  const afirmaciones = [];
+  (mod.examen || []).forEach((q) => {
+    const correcta = q.opciones[q.correcta];
+    if (correcta && correcta.length > 3) {
+      afirmaciones.push({
+        afirmacion: `"${correcta}" — ¿es la respuesta correcta a: ${q.pregunta}?`,
+        verdadero: true,
+        explica: "¡Sí! Esa es la opción correcta.",
+      });
+    }
+    // Una opción incorrecta como afirmación falsa
+    const idxMala = q.opciones.findIndex((_, i) => i !== q.correcta);
+    if (idxMala >= 0) {
+      const mala = q.opciones[idxMala];
+      afirmaciones.push({
+        afirmacion: `"${mala}" — ¿es la respuesta correcta a: ${q.pregunta}?`,
+        verdadero: false,
+        explica: `No. La correcta es: "${correcta}".`,
+      });
+    }
+  });
+  // Mezclar y limitar a 6 para que sea ágil
+  return afirmaciones.sort(() => Math.random() - 0.5).slice(0, 6);
+}
+
+/* Genera parejas de CARTAS OCULTAS (concepto ↔ definición)
+   a partir de los títulos y contenidos de los temas del módulo. */
+function generarCartas(mod) {
+  if (mod.refuerzo && Array.isArray(mod.refuerzo.cartas) && mod.refuerzo.cartas.length) {
+    return mod.refuerzo.cartas;
+  }
+  const parejas = [];
+  (mod.temas || []).forEach((t) => {
+    if (t.titulo && t.contenido) {
+      parejas.push({
+        concepto: _recortar(t.titulo, 60),
+        definicion: _recortar(t.contenido, 90),
+      });
+    }
+  });
+  // Máximo 4 parejas (8 cartas) para que el tablero sea manejable
+  return parejas.slice(0, 4);
+}
+
+/* Devuelve el índice del tema más relacionado con una pregunta,
+   comparando palabras clave de la pregunta con el texto del tema.
+   Sirve para el refuerzo personalizado: "fallaste en el tema X". */
+function temaDePregunta(mod, pregunta) {
+  if (!mod.temas || !mod.temas.length) return 0;
+  const palabras = pregunta
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((p) => p.length > 4); // palabras significativas
+
+  let mejorIdx = 0;
+  let mejorPuntaje = -1;
+  mod.temas.forEach((t, i) => {
+    const texto = (t.titulo + " " + t.contenido)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    let puntaje = 0;
+    palabras.forEach((p) => {
+      if (texto.includes(p)) puntaje++;
+    });
+    if (puntaje > mejorPuntaje) {
+      mejorPuntaje = puntaje;
+      mejorIdx = i;
+    }
+  });
+  return mejorIdx;
+}
