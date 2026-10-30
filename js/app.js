@@ -123,7 +123,7 @@ function entrarAdmin() {
     DB.sesionActual = "__admin__";
     irAAdmin();
   } else {
-    mostrarErrorLogin("Contraseña de administrador incorrecta.");
+    mostrarErrorLogin("Contraseña del Área de Calidad incorrecta.");
   }
 }
 
@@ -146,7 +146,7 @@ function renderTopbar() {
 
   if (DB.sesionActual === "__admin__") {
     cont.innerHTML = `
-      <span class="user-chip">👤 Administrador</span>
+      <span class="user-chip">🛡️ Área de Calidad</span>
       <button class="btn-ghost" id="logoutBtn">Salir</button>
     `;
   } else if (u) {
