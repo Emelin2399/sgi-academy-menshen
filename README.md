@@ -36,16 +36,25 @@ La plataforma es **totalmente responsive**: se adapta a computador, tablet y cel
 - **Celular:** menú apilado, módulos en una sola columna, botones grandes fáciles de tocar, inputs que **no hacen zoom raro en iPhone**, y la tabla del admin con desplazamiento lateral.
 - Incluye etiquetas para que, al "agregar a la pantalla de inicio" del celular, se vea como una app (color de barra, pantalla completa).
 
-## ▶️ Cómo usarla
+## ▶️ Cómo usarla (sin conocimientos técnicos, sin internet)
 
-Es una web estática (HTML/CSS/JS): **no requiere instalación** para probarla.
+Es una web de archivos (HTML/CSS/JS): **no requiere instalación, ni servidor, ni cuenta de nada.**
 
-- **Opción rápida (PC):** abre `index.html` en el navegador (Chrome/Edge).
-- **Opción recomendada (PC + celulares de los empleados):** publícala en un **servidor web interno** o en un hosting (por ejemplo GitHub Pages, Netlify o el servidor de la empresa). Así cada empleado entra desde la URL en su PC o celular.
-  - 💡 En el celular, al abrir la URL, pueden usar **"Agregar a pantalla de inicio"** para tener un acceso tipo app.
+### Opción 1 — En un PC (la más simple)
+1. Copia la carpeta completa del proyecto al computador (que tenga `index.html`, y las carpetas `css` y `js`).
+2. **Doble clic en `index.html`** → se abre en el navegador (Chrome/Edge). ¡Listo!
 
-### Acceso de administrador
-- Clic en **“🔐 Soy administrador”** en la pantalla de inicio.
+### Opción 2 — Para que todos los empleados la usen (PC y celulares)
+Como no todos los celulares pueden abrir archivos sueltos, para uso general conviene ponerla en un lugar compartido. Elige lo que más te sirva:
+- **Carpeta de red de la empresa:** copia la carpeta a una unidad compartida; cada PC abre `index.html`.
+- **Memoria USB:** cópiala a una USB y ábrela en cualquier PC.
+- **Publicación gratuita (recomendada para celulares):** sube la carpeta a un servicio gratuito como **Netlify Drop** (https://app.netlify.com/drop) — se arrastra la carpeta y te da un enlace que abres en cualquier celular. No requiere programar.
+  - 💡 En el celular, al abrir el enlace, usa **"Agregar a pantalla de inicio"** para tener un acceso tipo app.
+
+> ℹ️ Si más adelante quieres que yo (Kiro) publique la plataforma por ti, solo necesitarías una cuenta gratuita de GitHub; pero **no es obligatorio** para usarla.
+
+### Acceso del Área de Calidad (rol administrador)
+- Clic en **“🔐 Soy del Área de Calidad”** en la pantalla de inicio.
 - Contraseña por defecto: `menshen2026`
 - ⚠️ **Cámbiala** en `js/data.js` → `CONFIG.adminPassword`.
 
