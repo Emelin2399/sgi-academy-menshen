@@ -1,0 +1,547 @@
+/* ============================================================
+   SGI Academy Menshen Colombia — Estilos
+   Identidad: amigable, colorida, "guardián de la calidad"
+   ============================================================ */
+
+:root {
+  /* Paleta alineada a la identidad Menshen: azul corporativo + verde sostenibilidad */
+  --azul: #0b5fa4;         /* azul corporativo Menshen */
+  --azul-oscuro: #073b66;
+  --verde: #4caf50;        /* verde sostenibilidad */
+  --verde-oscuro: #2e7d32;
+  --amarillo: #f6c343;
+  --rojo: #e53935;
+  --morado: #5b7fbd;       /* acento azul-grisáceo (sustituye morado) */
+  --gris-fondo: #eef3f7;
+  --gris-texto: #2b3a47;
+  --blanco: #ffffff;
+  --sombra: 0 8px 24px rgba(7, 59, 102, 0.14);
+  --sombra-suave: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radio: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Nunito", system-ui, sans-serif;
+  background: var(--gris-fondo);
+  color: var(--gris-texto);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, .mascot-name { font-family: "Baloo 2", "Nunito", sans-serif; }
+
+/* ---------------- Encabezado ---------------- */
+.topbar {
+  background: linear-gradient(120deg, var(--azul-oscuro) 0%, var(--azul) 55%, var(--verde) 130%);
+  color: var(--blanco);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--sombra);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mascot { font-size: 34px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+.brand-text h1 { font-size: 22px; line-height: 1; letter-spacing: .3px; }
+.brand-text small { opacity: .85; font-weight: 700; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.score-chip {
+  background: rgba(255,255,255,.18);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  display: flex; align-items: center; gap: 6px;
+  backdrop-filter: blur(4px);
+}
+.btn-ghost {
+  background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.4);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.3); }
+
+/* ---------------- Contenedor ---------------- */
+#app { flex: 1; width: 100%; max-width: 1040px; margin: 0 auto; padding: 24px 18px 60px; }
+.view.hidden { display: none; }
+
+/* ---------------- Hero + Mascota ---------------- */
+.hero {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 26px;
+  margin-bottom: 26px;
+  display: flex;
+  justify-content: center;
+}
+.hero-mascot { text-align: center; max-width: 620px; }
+.mascot-bubble {
+  background: var(--amarillo);
+  color: #7a5c00;
+  font-weight: 700;
+  padding: 14px 18px;
+  border-radius: 16px;
+  position: relative;
+  margin-bottom: 16px;
+  box-shadow: var(--sombra-suave);
+}
+.mascot-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: var(--amarillo);
+}
+.mascot-char { position: relative; display: inline-block; animation: bob 2.4s ease-in-out infinite; }
+.mascot-emoji { font-size: 76px; line-height: 1; }
+.mascot-badge {
+  position: absolute; bottom: 4px; right: -6px;
+  font-size: 28px;
+  background: var(--blanco);
+  border-radius: 50%;
+  padding: 2px 4px;
+  box-shadow: var(--sombra-suave);
+}
+.mascot-name { font-size: 26px; color: var(--azul-oscuro); margin-top: 4px; }
+.mascot-slogan { font-style: italic; color: var(--morado); font-weight: 700; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* ---------------- Títulos de sección ---------------- */
+.section-title { font-size: 26px; color: var(--azul-oscuro); margin-bottom: 4px; text-align: center; }
+.section-sub { text-align: center; margin-bottom: 24px; color: #64748b; font-weight: 600; }
+
+/* ---------------- Grid de módulos ---------------- */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+.module-card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-suave);
+  padding: 20px;
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s;
+  border-top: 6px solid var(--azul);
+  position: relative;
+  overflow: hidden;
+}
+.module-card:hover { transform: translateY(-5px); box-shadow: var(--sombra); }
+.module-card.locked { cursor: not-allowed; opacity: .72; }
+.module-icon { font-size: 40px; }
+.module-card h3 { font-size: 18px; margin: 8px 0 6px; color: var(--azul-oscuro); }
+.module-card p { font-size: 14px; color: #64748b; }
+.module-status {
+  margin-top: 12px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.status-done { background: #dcfce7; color: #166534; }
+.status-start { background: #dbeafe; color: #1e40af; }
+.status-soon { background: #f1f5f9; color: #64748b; }
+.ribbon {
+  position: absolute; top: 12px; right: -34px;
+  background: var(--verde); color: #fff;
+  font-size: 11px; font-weight: 800;
+  padding: 3px 40px;
+  transform: rotate(45deg);
+}
+
+/* ---------------- Vista de módulo ---------------- */
+.module-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 18px;
+}
+.back-btn {
+  background: var(--blanco);
+  border: none;
+  box-shadow: var(--sombra-suave);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--azul);
+}
+.back-btn:hover { background: #eff6ff; }
+.module-title-big { font-size: 26px; color: var(--azul-oscuro); display: flex; align-items: center; gap: 10px; }
+
+.card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-suave);
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.card h3 { color: var(--azul-oscuro); margin-bottom: 8px; }
+.tip {
+  margin-top: 12px;
+  background: #fffbeb;
+  border-left: 4px solid var(--amarillo);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #92700a;
+}
+
+/* Capi mini en secciones */
+.capi-mini { display: inline-block; margin-right: 4px; }
+
+/* Botones de acción */
+.btn {
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  transition: .2s;
+}
+.btn:hover { background: var(--azul-oscuro); transform: translateY(-2px); }
+.btn.secondary { background: var(--morado); }
+.btn.success { background: var(--verde); }
+
+/* ---------------- Preguntas / exámenes ---------------- */
+.question { margin-bottom: 22px; }
+.question p.q-text { font-weight: 800; margin-bottom: 10px; color: var(--azul-oscuro); }
+.option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .15s;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--gris-texto);
+}
+.option:hover { border-color: var(--azul); background: #eff6ff; }
+.option.selected { border-color: var(--azul); background: #dbeafe; }
+.option.correct { border-color: var(--verde); background: #dcfce7; color: #166534; }
+.option.wrong { border-color: var(--rojo); background: #fee2e2; color: #991b1b; }
+.option:disabled { cursor: default; }
+
+.feedback {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.feedback.ok { background: #dcfce7; color: #166534; }
+.feedback.no { background: #fee2e2; color: #991b1b; }
+
+/* Resultado del examen */
+.exam-result {
+  text-align: center;
+  padding: 10px;
+}
+.exam-result .score-big { font-size: 52px; font-family: "Baloo 2"; color: var(--azul); }
+.progress-bar { background: #e2e8f0; border-radius: 999px; height: 14px; overflow: hidden; margin: 14px 0; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--verde), var(--azul)); transition: width .6s; }
+
+/* ---------------- Escape room ---------------- */
+.escape-scene {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.escape-item {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: .15s;
+  text-align: center;
+}
+.escape-item:hover { border-color: var(--morado); background: #f5f3ff; }
+.escape-item.found { border-style: solid; border-color: var(--verde); background: #dcfce7; cursor: default; }
+.escape-item.wrong { border-color: var(--rojo); background: #fee2e2; }
+.escape-counter { font-weight: 800; color: var(--morado); font-size: 18px; }
+
+/* ---------------- Certificado ---------------- */
+.cert {
+  text-align: center;
+  border: 6px double var(--amarillo);
+  border-radius: 16px;
+  padding: 28px;
+  background: linear-gradient(180deg, #fffef5, #fff);
+}
+.cert h2 { color: var(--azul-oscuro); font-size: 30px; }
+.cert .cert-emoji { font-size: 56px; }
+
+/* ---------------- Footer ---------------- */
+.footer {
+  text-align: center;
+  padding: 18px;
+  color: #64748b;
+  font-size: 14px;
+  background: #e2e8f0;
+}
+
+/* ---------------- Responsive base (ver bloque ampliado al final) ---------------- */
+
+/* ============================================================
+   AÑADIDOS: Login, usuario, panel de administrador
+   ============================================================ */
+
+/* Utilidad */
+.hidden { display: none !important; }
+
+/* Chip de usuario en topbar */
+.user-chip {
+  background: rgba(255,255,255,.18);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  color: #fff;
+  backdrop-filter: blur(4px);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- Login ---------------- */
+.login-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 26px;
+  align-items: center;
+  max-width: 860px;
+  margin: 24px auto;
+}
+.login-mascot {
+  text-align: center;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 30px 20px;
+}
+.login-card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 28px;
+}
+.login-card h2 { color: var(--azul-oscuro); margin-bottom: 4px; }
+.field-label {
+  display: block;
+  font-weight: 800;
+  color: var(--azul-oscuro);
+  margin: 12px 0 6px;
+  font-size: 14px;
+}
+.field {
+  width: 100%;
+  padding: 13px 14px;
+  border: 2px solid #d7e2ec;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 16px;      /* 16px evita el zoom automático en iPhone */
+  font-weight: 600;
+  color: var(--gris-texto);
+  transition: .15s;
+}
+.field:focus { outline: none; border-color: var(--azul); background: #f2f8ff; }
+.btn.full, .btn-ghost.full { width: 100%; margin-top: 16px; display: block; }
+.btn-ghost.dark {
+  background: #eef3f7;
+  border: 1.5px solid #cdd9e4;
+  color: var(--azul-oscuro);
+}
+.btn-ghost.dark:hover { background: #e2ebf2; }
+.login-divider {
+  text-align: center;
+  margin: 18px 0 6px;
+  position: relative;
+  color: #90a4b5;
+  font-weight: 700;
+}
+.login-divider::before {
+  content: ""; position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: #e0e8ef; z-index: 0;
+}
+.login-divider span { background: var(--blanco); padding: 0 12px; position: relative; z-index: 1; }
+.hint { font-size: 12px; color: #90a4b5; margin-top: 8px; }
+.hint code { background: #eef3f7; padding: 1px 6px; border-radius: 6px; }
+
+/* ---------------- Panel administrador ---------------- */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-suave);
+  padding: 18px;
+  text-align: center;
+  border-top: 5px solid var(--azul);
+}
+.stat-num { font-family: "Baloo 2"; font-size: 34px; color: var(--azul); line-height: 1; }
+.stat-label { font-size: 13px; font-weight: 700; color: #64748b; margin-top: 4px; }
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.table-wrap { overflow-x: auto; }
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.admin-table th, .admin-table td {
+  text-align: left;
+  padding: 11px 12px;
+  border-bottom: 1px solid #e6edf3;
+}
+.admin-table th {
+  background: #f4f8fb;
+  color: var(--azul-oscuro);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.admin-table tbody tr:hover { background: #f8fbfe; }
+
+@media (max-width: 680px) {
+  .login-wrap { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   RESPONSIVE COMPLETO — Optimizado para PC, tablet y celular
+   ============================================================ */
+
+/* Respetar el "notch" en iPhone y mejorar el desplazamiento táctil */
+.topbar { padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
+html { -webkit-text-size-adjust: 100%; }
+.table-wrap { -webkit-overflow-scrolling: touch; }
+
+/* Áreas táctiles cómodas (mín. recomendado ~44px) en pantallas táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .btn, .btn-ghost, .back-btn { min-height: 46px; }
+  .option { min-height: 48px; }
+  .module-card { padding: 22px; }
+  /* Quitar efectos hover que "se quedan pegados" en táctil */
+  .module-card:hover { transform: none; box-shadow: var(--sombra-suave); }
+  .btn:hover { transform: none; }
+}
+
+/* ---------- TABLET (hasta 820px) ---------- */
+@media (max-width: 820px) {
+  #app { padding: 18px 14px 50px; }
+  .login-wrap { grid-template-columns: 1fr; gap: 18px; }
+  .module-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+}
+
+/* ---------- CELULAR (hasta 600px) ---------- */
+@media (max-width: 600px) {
+  /* Encabezado: marca arriba, controles abajo, sin desbordes */
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .brand { justify-content: center; }
+  .brand-text h1 { font-size: 19px; }
+  .brand-mascot { font-size: 30px; }
+  .topbar-right {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .user-chip { max-width: 55vw; font-size: 14px; }
+
+  /* Títulos y textos */
+  .section-title { font-size: 21px; }
+  .section-sub { font-size: 14px; }
+
+  /* Hero / mascota más compactos */
+  .hero { padding: 18px; margin-bottom: 18px; }
+  .mascot-emoji { font-size: 60px; }
+  .mascot-bubble { font-size: 14px; padding: 12px 14px; }
+
+  /* Módulos en una sola columna para lectura cómoda */
+  .module-grid { grid-template-columns: 1fr; }
+
+  /* Tarjetas de contenido */
+  .card { padding: 18px; }
+
+  /* Encabezado de módulo: botón volver y título se acomodan */
+  .module-header { flex-wrap: wrap; gap: 10px; }
+  .module-title-big { font-size: 20px; }
+
+  /* Escape room: una columna */
+  .escape-scene { grid-template-columns: 1fr; }
+
+  /* Panel admin: estadísticas en 2 columnas, tabla con scroll */
+  .admin-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-num { font-size: 28px; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-toolbar > div { display: flex; gap: 8px; }
+  .admin-toolbar .btn, .admin-toolbar .btn-ghost { flex: 1; }
+  .admin-table { font-size: 13px; }
+  .admin-table th, .admin-table td { padding: 9px 8px; }
+
+  /* Resultado de examen / certificado */
+  .exam-result .score-big { font-size: 44px; }
+  .cert { padding: 20px; }
+  .cert h2 { font-size: 24px; }
+
+  /* Login */
+  .login-card { padding: 20px; }
+  .login-card h2 { font-size: 20px; }
+  .login-mascot { padding: 22px 16px; }
+}
+
+/* ---------- CELULAR PEQUEÑO (hasta 380px) ---------- */
+@media (max-width: 380px) {
+  .admin-stats { grid-template-columns: 1fr; }
+  .brand-text h1 { font-size: 17px; }
+  .mascot-emoji { font-size: 52px; }
+}
+
+/* Mejor scroll-hint para la tabla del admin en móvil */
+@media (max-width: 600px) {
+  .table-wrap::after {
+    content: "→ desliza para ver más";
+    display: block;
+    text-align: right;
+    font-size: 11px;
+    color: #90a4b5;
+    padding: 6px 2px 0;
+  }
+}

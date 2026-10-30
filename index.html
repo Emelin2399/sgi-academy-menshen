@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b5fa4" />
+  <meta name="description" content="SGI Academy Menshen — capacitación interactiva del Sistema de Gestión Integrado para PC y celulares." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SGI Academy" />
+  <title>SGI Academy Menshen — Capacitación del Sistema de Gestión Integrado</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ====================== ENCABEZADO ====================== -->
+  <header class="topbar" id="topbar">
+    <div class="brand">
+      <span class="brand-mascot" aria-hidden="true">🐶</span>
+      <div class="brand-text">
+        <h1>SGI Academy Menshen</h1>
+        <small>Sistema de Gestión Integrado</small>
+      </div>
+    </div>
+    <div class="topbar-right" id="topbarRight">
+      <!-- Se llena dinámicamente según sesión -->
+    </div>
+  </header>
+
+  <!-- ====================== CONTENEDOR PRINCIPAL ====================== -->
+  <main id="app">
+
+    <!-- Vista: Login / Registro -->
+    <section id="view-login" class="view">
+      <div class="login-wrap">
+        <div class="login-mascot">
+          <div class="mascot-char" aria-hidden="true">
+            <div class="mascot-emoji">🐶</div>
+            <div class="mascot-badge">🛡️</div>
+          </div>
+          <div class="mascot-name">Capi</div>
+          <div class="mascot-slogan" id="loginSlogan"></div>
+        </div>
+        <div class="login-card">
+          <h2>¡Bienvenido, Guardián de la Calidad!</h2>
+          <p class="section-sub" style="margin-bottom:18px">Ingresa tus datos para empezar o continuar tu capacitación.</p>
+
+          <label class="field-label" for="inpNombre">Nombre completo</label>
+          <input id="inpNombre" class="field" type="text" placeholder="Ej: María Gómez" autocomplete="name" />
+
+          <label class="field-label" for="inpArea">Área / Cargo</label>
+          <input id="inpArea" class="field" type="text" placeholder="Ej: Producción, Calidad, Logística..." />
+
+          <button class="btn success full" id="loginBtn">Entrar a mi capacitación</button>
+
+          <div class="login-divider"><span>o</span></div>
+
+          <button class="btn-ghost dark full" id="adminToggle">🔐 Soy administrador</button>
+
+          <div id="adminLoginBox" class="hidden" style="margin-top:14px">
+            <label class="field-label" for="inpAdminPass">Contraseña de administrador</label>
+            <input id="inpAdminPass" class="field" type="password" placeholder="Contraseña" />
+            <button class="btn full" id="adminLoginBtn">Entrar al panel</button>
+            <p class="hint">Por defecto: <code>menshen2026</code> (cámbiala en <code>js/data.js</code>)</p>
+          </div>
+          <div id="loginError" class="feedback no hidden" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vista: Inicio (empleado) -->
+    <section id="view-home" class="view hidden">
+      <div class="hero">
+        <div class="hero-mascot">
+          <div class="mascot-bubble" id="mascotBubble"></div>
+          <div class="mascot-char" aria-hidden="true">
+            <div class="mascot-emoji">🐶</div>
+            <div class="mascot-badge">🛡️</div>
+          </div>
+          <div class="mascot-name">Capi</div>
+          <div class="mascot-slogan" id="mascotSlogan"></div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Elige tu misión de hoy</h2>
+      <p class="section-sub">Completa módulos, gana puntos y conviértete en Guardián de la Calidad 🛡️</p>
+
+      <div id="moduleGrid" class="module-grid"></div>
+    </section>
+
+    <!-- Vista: Módulo (se llena dinámicamente) -->
+    <section id="view-module" class="view hidden"></section>
+
+    <!-- Vista: Panel de administrador -->
+    <section id="view-admin" class="view hidden">
+      <h2 class="section-title">📊 Panel de Administrador</h2>
+      <p class="section-sub">Seguimiento de la capacitación del personal de Menshen Colombia</p>
+
+      <div class="admin-stats" id="adminStats"></div>
+
+      <div class="card">
+        <div class="admin-toolbar">
+          <h3 style="margin:0">Calificaciones por empleado</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn secondary" id="exportBtn">⬇ Exportar CSV</button>
+            <button class="btn-ghost dark" id="adminResetBtn">🗑 Borrar todos los datos</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table" id="adminTable">
+            <thead>
+              <tr>
+                <th>Empleado</th>
+                <th>Área / Cargo</th>
+                <th>Módulos completados</th>
+                <th>Promedio</th>
+                <th>Puntos</th>
+                <th>Última actividad</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody"></tbody>
+          </table>
+        </div>
+        <p id="adminEmpty" class="hint" style="text-align:center;margin-top:12px"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>SGI Academy Menshen · Capacitación del Sistema de Gestión Integrado · Hecho con <span aria-hidden="true">🐾</span> para nuestros Guardianes de la Calidad</p>
+  </footer>
+
+  <!-- ====================== SCRIPTS ====================== -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
