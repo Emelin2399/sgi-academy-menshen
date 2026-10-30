@@ -67,6 +67,60 @@ function guardar() {
 }
 
 /* ============================================================
+   VOZ DE CAPI MENSHI (Web Speech API)
+   Capi puede HABLAR en voz alta en PC y celulares, sin instalar
+   nada. El usuario puede activar/silenciar la voz con un botón.
+   ============================================================ */
+const Voz = {
+  soportada: typeof window !== "undefined" && "speechSynthesis" in window,
+  activa: true, // el usuario puede silenciar
+  vozEs: null,
+
+  init() {
+    if (!this.soportada) return;
+    // Preferencia guardada de voz on/off
+    const pref = localStorage.getItem("sgi_voz_activa");
+    if (pref !== null) this.activa = pref === "1";
+    // Buscar una voz en español cuando el navegador las cargue
+    const elegir = () => {
+      const voces = window.speechSynthesis.getVoices();
+      this.vozEs =
+        voces.find((v) => /es(-|_)?(CO|419|MX|ES)/i.test(v.lang)) ||
+        voces.find((v) => /^es/i.test(v.lang)) ||
+        null;
+    };
+    elegir();
+    window.speechSynthesis.onvoiceschanged = elegir;
+  },
+
+  hablar(texto) {
+    if (!this.soportada || !this.activa || !texto) return;
+    // Quitar emojis para que no los lea
+    const limpio = texto.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, "").trim();
+    if (!limpio) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(limpio);
+    u.lang = "es-CO";
+    if (this.vozEs) u.voice = this.vozEs;
+    u.rate = 1;
+    u.pitch = 1.15; // tono amigable
+    window.speechSynthesis.speak(u);
+  },
+
+  silenciar() {
+    if (this.soportada) window.speechSynthesis.cancel();
+  },
+
+  toggle() {
+    this.activa = !this.activa;
+    localStorage.setItem("sgi_voz_activa", this.activa ? "1" : "0");
+    if (!this.activa) this.silenciar();
+    return this.activa;
+  },
+};
+Voz.init();
+
+/* ============================================================
    LOGIN / SESIÓN
    ============================================================ */
 function initLogin() {
@@ -144,15 +198,21 @@ function renderTopbar() {
   const cont = $("#topbarRight");
   const u = usuarioActual();
 
+  const btnVoz = Voz.soportada
+    ? `<button class="btn-ghost" id="vozBtn" title="Activar o silenciar la voz de Capi Menshi">${Voz.activa ? "🔊" : "🔇"} Capi</button>`
+    : "";
+
   if (DB.sesionActual === "__admin__") {
     cont.innerHTML = `
       <span class="user-chip">🛡️ Área de Calidad</span>
+      ${btnVoz}
       <button class="btn-ghost" id="logoutBtn">Salir</button>
     `;
   } else if (u) {
     cont.innerHTML = `
       <span class="user-chip" title="${u.area}">👤 ${u.nombre}</span>
       <div class="score-chip" title="Tus puntos de guardián"><span aria-hidden="true">⭐</span> <span>${u.puntos}</span> pts</div>
+      ${btnVoz}
       <button class="btn-ghost" id="logoutBtn">Salir</button>
     `;
   } else {
@@ -161,6 +221,13 @@ function renderTopbar() {
   }
   const lb = $("#logoutBtn");
   if (lb) lb.addEventListener("click", cerrarSesion);
+  const vb = $("#vozBtn");
+  if (vb)
+    vb.addEventListener("click", () => {
+      const activa = Voz.toggle();
+      vb.innerHTML = `${activa ? "🔊" : "🔇"} Capi`;
+      if (activa) Voz.hablar("¡Hola! Ahora puedes escucharme.");
+    });
 }
 
 function actualizarPuntajeTopbar() {
@@ -203,8 +270,10 @@ function irAAdmin() {
 function initHome() {
   const u = usuarioActual();
   const nombreCorto = u ? u.nombre.split(" ")[0] : "";
-  $("#mascotBubble").textContent = `¡Guau, ${nombreCorto}! ` + MASCOTA.frases.bienvenida;
+  const saludo = `¡Hola, ${nombreCorto}! ` + MASCOTA.frases.bienvenida;
+  $("#mascotBubble").textContent = saludo;
   $("#mascotSlogan").textContent = "“" + MASCOTA.eslogan + "”";
+  Voz.hablar(saludo);
   renderModulos();
 }
 
@@ -258,12 +327,23 @@ function abrirModulo(modId) {
     </div>
   `;
 
-  mod.temas.forEach((t) => {
+  mod.temas.forEach((t, ti) => {
+    const btnLeer = Voz.soportada
+      ? `<button class="btn-leer" data-leer="tema-${ti}" title="Que Capi Menshi lo lea en voz alta">🔊 Escuchar</button>`
+      : "";
     html += `
       <div class="card">
         <h3>${t.titulo}</h3>
         <p>${t.contenido}</p>
-        ${t.tip ? `<div class="tip"><span class="capi-mini">🐶</span>${t.tip}</div>` : ""}
+        ${
+          t.tip
+            ? `<div class="tip">
+                 <img class="capi-mini" src="img/capi-menshi.svg" alt="Capi Menshi" />
+                 <span data-tip="tema-${ti}">${t.tip}</span>
+                 ${btnLeer}
+               </div>`
+            : ""
+        }
       </div>
     `;
   });
@@ -309,6 +389,16 @@ function abrirModulo(modId) {
   mostrarVista("#view-module");
 
   $("#backBtn").addEventListener("click", irAInicio);
+
+  // Botones "Escuchar": Capi Menshi lee el consejo en voz alta
+  document.querySelectorAll(".btn-leer").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-leer");
+      const span = document.querySelector(`[data-tip="${id}"]`);
+      if (span) Voz.hablar("Capi Menshi dice: " + span.textContent.replace(/Capi Menshi dice:/i, ""));
+    });
+  });
+
   if (mod.caso) renderCaso(mod);
   if (mod.escapeRoom) renderEscape(mod);
   if (mod.examen && mod.examen.length) renderExamen(mod);
@@ -332,11 +422,13 @@ function renderCaso(mod) {
       if (i === mod.caso.correcta) {
         b.classList.add("correct");
         fb.innerHTML = `<div class="feedback ok">✅ ${MASCOTA.frases.aciertoExamen} ${mod.caso.explicacion}</div>`;
+        Voz.hablar(MASCOTA.frases.aciertoExamen + " " + mod.caso.explicacion);
         sumarPuntos(10);
       } else {
         b.classList.add("wrong");
         botones[mod.caso.correcta].classList.add("correct");
         fb.innerHTML = `<div class="feedback no">❌ ${MASCOTA.frases.falloExamen} ${mod.caso.explicacion}</div>`;
+        Voz.hablar(MASCOTA.frases.falloExamen + " " + mod.caso.explicacion);
       }
     });
     cont.appendChild(b);
@@ -365,13 +457,17 @@ function renderEscape(mod) {
         counter.textContent = encontradas;
         sumarPuntos(5);
         fb.innerHTML = `<div class="feedback ok">✅ ${pista.mensaje}</div>`;
+        Voz.hablar(pista.mensaje);
         if (encontradas === totalCorrectas) {
+          const msg = "¡Lo lograste! Encontraste todo. " + MASCOTA.frases.moduloCompleto;
           fb.innerHTML = `<div class="feedback ok">🎉 ¡Escapaste de la sala! Encontraste todas las no conformidades. ${MASCOTA.frases.moduloCompleto}</div>`;
+          Voz.hablar(msg);
           sumarPuntos(15);
         }
       } else {
         el.classList.add("wrong");
         fb.innerHTML = `<div class="feedback no">👀 ${pista.mensaje}</div>`;
+        Voz.hablar(pista.mensaje);
         setTimeout(() => el.classList.remove("wrong"), 700);
       }
     });
@@ -471,6 +567,13 @@ function calificarExamen(mod, seleccion, cont) {
     </div>
   `;
 
+  // Capi Menshi anuncia el resultado en voz alta
+  Voz.hablar(
+    aprobado
+      ? `¡Aprobaste con ${porcentaje} por ciento! ${MASCOTA.frases.moduloCompleto}`
+      : `Obtuviste ${porcentaje} por ciento. ${MASCOTA.frases.animo} Necesitas 70 por ciento para aprobar.`
+  );
+
   const reintentar = $("#reintentarBtn");
   if (reintentar) reintentar.addEventListener("click", () => abrirModulo(mod.id));
   $("#volverBtn").addEventListener("click", irAInicio);
@@ -489,7 +592,7 @@ function renderCertificado(mod, porcentaje) {
       <p>Por completar el módulo</p>
       <p style="font-size:20px;font-weight:800;color:${mod.color}">${mod.icono} ${mod.titulo}</p>
       <p style="margin-top:8px">Calificación: <strong>${porcentaje}%</strong> · ${new Date().toLocaleDateString("es-CO")}</p>
-      <p style="margin-top:8px;font-style:italic;color:var(--morado)">“${MASCOTA.eslogan}” — Capi 🐶</p>
+      <p style="margin-top:8px;font-style:italic;color:var(--morado)">“${MASCOTA.eslogan}” — ${MASCOTA.nombre}</p>
     </div>
   `;
 }

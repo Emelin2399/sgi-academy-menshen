@@ -4,18 +4,18 @@
    ============================================================ */
 
 :root {
-  /* Paleta alineada a la identidad Menshen: azul corporativo + verde sostenibilidad */
-  --azul: #0b5fa4;         /* azul corporativo Menshen */
-  --azul-oscuro: #073b66;
-  --verde: #4caf50;        /* verde sostenibilidad */
-  --verde-oscuro: #2e7d32;
-  --amarillo: #f6c343;
+  /* Paleta OFICIAL Menshen: magenta/fucsia del logo + gris corporativo */
+  --azul: #E6007E;         /* magenta Menshen (color insignia del logo) */
+  --azul-oscuro: #9e0057;  /* magenta oscuro para contrastes */
+  --verde: #6c9a2f;        /* verde del módulo ambiental */
+  --verde-oscuro: #4e7021;
+  --amarillo: #f6c343;     /* amarillo neón del uniforme (reflectivo) */
   --rojo: #e53935;
-  --morado: #5b7fbd;       /* acento azul-grisáceo (sustituye morado) */
-  --gris-fondo: #eef3f7;
-  --gris-texto: #2b3a47;
+  --morado: #808285;       /* gris corporativo Menshen (cuerpo del logo) */
+  --gris-fondo: #f2f3f5;
+  --gris-texto: #3a3c3e;
   --blanco: #ffffff;
-  --sombra: 0 8px 24px rgba(7, 59, 102, 0.14);
+  --sombra: 0 8px 24px rgba(128, 130, 133, 0.18);
   --sombra-suave: 0 4px 12px rgba(0, 0, 0, 0.08);
   --radio: 18px;
 }
@@ -36,7 +36,7 @@ h1, h2, h3, .mascot-name { font-family: "Baloo 2", "Nunito", sans-serif; }
 
 /* ---------------- Encabezado ---------------- */
 .topbar {
-  background: linear-gradient(120deg, var(--azul-oscuro) 0%, var(--azul) 55%, var(--verde) 130%);
+  background: linear-gradient(120deg, var(--morado) 0%, #5f6164 45%, var(--azul) 115%);
   color: var(--blanco);
   padding: 14px 24px;
   display: flex;
@@ -48,7 +48,7 @@ h1, h2, h3, .mascot-name { font-family: "Baloo 2", "Nunito", sans-serif; }
   z-index: 50;
 }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand-mascot { font-size: 34px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+.brand-mascot { width: 42px; height: 42px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); background: #fff; border-radius: 50%; padding: 3px; }
 .brand-text h1 { font-size: 22px; line-height: 1; letter-spacing: .3px; }
 .brand-text small { opacity: .85; font-weight: 700; }
 .topbar-right { display: flex; align-items: center; gap: 12px; }
@@ -106,15 +106,7 @@ h1, h2, h3, .mascot-name { font-family: "Baloo 2", "Nunito", sans-serif; }
   border-top-color: var(--amarillo);
 }
 .mascot-char { position: relative; display: inline-block; animation: bob 2.4s ease-in-out infinite; }
-.mascot-emoji { font-size: 76px; line-height: 1; }
-.mascot-badge {
-  position: absolute; bottom: 4px; right: -6px;
-  font-size: 28px;
-  background: var(--blanco);
-  border-radius: 50%;
-  padding: 2px 4px;
-  box-shadow: var(--sombra-suave);
-}
+.mascot-img { width: 130px; height: auto; display: block; }
 .mascot-name { font-size: 26px; color: var(--azul-oscuro); margin-top: 4px; }
 .mascot-slogan { font-style: italic; color: var(--morado); font-weight: 700; }
 @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
@@ -201,7 +193,23 @@ h1, h2, h3, .mascot-name { font-family: "Baloo 2", "Nunito", sans-serif; }
 }
 
 /* Capi mini en secciones */
-.capi-mini { display: inline-block; margin-right: 4px; }
+.capi-mini { width: 28px; height: 28px; vertical-align: middle; margin-right: 6px; flex-shrink: 0; }
+.tip { display: flex; align-items: flex-start; gap: 4px; flex-wrap: wrap; }
+.tip > span { flex: 1; min-width: 180px; }
+.btn-leer {
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: .15s;
+}
+.btn-leer:hover { background: var(--azul-oscuro); }
 
 /* Botones de acción */
 .btn {
@@ -491,7 +499,7 @@ html { -webkit-text-size-adjust: 100%; }
 
   /* Hero / mascota más compactos */
   .hero { padding: 18px; margin-bottom: 18px; }
-  .mascot-emoji { font-size: 60px; }
+  .mascot-img { width: 100px; }
   .mascot-bubble { font-size: 14px; padding: 12px 14px; }
 
   /* Módulos en una sola columna para lectura cómoda */
@@ -531,7 +539,7 @@ html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 380px) {
   .admin-stats { grid-template-columns: 1fr; }
   .brand-text h1 { font-size: 17px; }
-  .mascot-emoji { font-size: 52px; }
+  .mascot-img { width: 86px; }
 }
 
 /* Mejor scroll-hint para la tabla del admin en móvil */
